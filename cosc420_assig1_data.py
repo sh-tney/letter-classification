@@ -104,5 +104,4 @@ if __name__ == "__main__":
 		import show_methods
 
 		show_methods.show_data_images(images=train_images[:16],labels=train_labels[:16],class_names=class_names)
-		print(task + dtype + '.png')
-		plt.savefig(task + dtype + '.png')
+		plt.savefig(task + dtype + '_data.png')
