@@ -3,15 +3,15 @@ import show_methods
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
-import os, pickle, gzip
+import os, pickle, gzip, json
 
 # Define the task/type here
 Task = 'simple'
 DataType = 'clean'
+Epochs = 1
 
-# If doing task on a remote computer, this option will save png files for figures
-#  rather than trying to show them.
-Remote = True
+# Saving the figures rather than showing them is used for remote work.
+SaveFigures = True
 LoadFromFile = False
 
 # Loading data from supplied functions
@@ -23,7 +23,7 @@ n_classes = len(class_names)
 
 # Show a sample of collected training data
 show_methods.show_data_images(images=train_images[:16],labels=train_labels[:16],class_names=class_names)
-if Remote:
+if SaveFigures:
    plt.savefig(Task + DataType + '_train.png')
 
 # Perpare save filename/directory
@@ -58,7 +58,7 @@ else:
                  metrics=['accuracy'])
 
    # Train the model for 20 epochs, using 33% of the train data as validation
-   train_info = net.fit(train_images, train_labels, validation_split=0.33, epochs=5)
+   train_info = net.fit(train_images, train_labels, validation_split=0.33, epochs=Epochs)
 
    # Save model to file
    print("Saving neural network to %s..." % net_save_name)
@@ -78,6 +78,10 @@ plt.ylabel('Accuracy')
 plt.ylim([0, 1])
 plt.legend(loc='lower right')
 
+if SaveFigures:
+   plt.savefig(Task + DataType + '_history.png')
+plt.show()
+
 # Evaluating the neural network model within tensorflow
 loss_train, accuracy_train = net.evaluate(train_images,  train_labels, verbose=0)
 loss_test, accuracy_test = net.evaluate(test_images, test_labels, verbose=0)
@@ -86,15 +90,16 @@ print("Test accuracy  (tf): %.2f" % accuracy_test)
 
 # Compute output for 16 test images
 y_hat_test = net.predict(test_images[:16])
-print(y_hat_test)
 y_hat_test = np.argmax(y_hat_test, axis=1)
 
 # Show true labels and predictions for 16 test images
 show_methods.show_data_images(images=test_images[:16],
                               labels=test_labels[:16],predictions=y_hat_test,
                               class_names=class_names)
-
-if Remote:
+if SaveFigures:
    plt.savefig(Task + DataType + '_results.png')
-else:
-   plt.show()
+plt.show()
+
+# Append layer structure to csv
+# j = open(Task + DataType + '_structure_history.json', 'a')
+# j.write(str(json.dumps([l.name for l in layers])))

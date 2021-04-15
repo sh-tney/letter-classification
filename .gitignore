@@ -170,4 +170,6 @@ Thumbs.db
 
 # Project specific ignores
 *.png
+*.csv
+saved/
 data/
