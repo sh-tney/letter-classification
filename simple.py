@@ -3,12 +3,12 @@ import show_methods
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
-import os, pickle, gzip, json
+import os, pickle, gzip, csv, inspect
 
 # Define the task/type here
 Task = 'simple'
 DataType = 'clean'
-Epochs = 1
+Epochs = 20
 
 # Saving the figures rather than showing them is used for remote work.
 SaveFigures = True
@@ -46,11 +46,12 @@ if LoadFromFile:
 else:
    # Pre-Define layers in an array structure for easier recording later
    layers = [
-      tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=(1,1), activation='relu', input_shape=(28, 28, 3)),
-      tf.keras.layers.Flatten(),
-      tf.keras.layers.Dense(units=n_classes,activation='softmax')
+      (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=(1,1), activation='relu', input_shape=(28, 28, 3))),
+      (lambda: tf.keras.layers.Flatten()),
+      (lambda: tf.keras.layers.Dense(units=n_classes,activation='softmax'))
    ]
-   net = tf.keras.models.Sequential(layers)
+   print(map(lambda l: l(), layers))
+   net = tf.keras.models.Sequential(list(map(lambda l: l(), layers)))
 
    # Define training regime: type of optimiser, loss function to optimise and type of error measure to report
    net.compile(optimizer='adam',
@@ -101,5 +102,9 @@ if SaveFigures:
 plt.show()
 
 # Append layer structure to csv
+with open(Task + DataType + '_structure_history.csv', 'a') as c:
+   w = csv.writer(c)
+   w.writerow([accuracy_test, accuracy_train, Epochs] + list(map(lambda l: inspect.getsource(l).strip(), layers)))
+   
 # j = open(Task + DataType + '_structure_history.json', 'a')
 # j.write(str(json.dumps([l.name for l in layers])))
