@@ -11,9 +11,10 @@ DataType = 'noisy'
 Epochs = 50
 
 # Saving the figures rather than showing them is used for remote work.
-SaveFigures = True
+SaveFigures = False
 LoadFromFile = True
-Iteration = "74FinalSimpleNoisy"
+Iteration = "0Dupe42FineGrainNoisyFinal" # Runs model based on the final FineGrain structure
+# Iteration = "74FinalSimpleNoisy" # Runs a model based on the structure in this file
 
 # Loading data from supplied functions
 # Training images are a 20000x28x28x3 matrix - 20k images, 28x28 pixels of RGB
@@ -93,6 +94,7 @@ else:
    aug = imgGen.flow(train_images, train_labels)
 
    # Train the model for defined number of epochs, using 25% of the train data as validation
+   # train_info = net.fit(train_images, train_labels, validation_split=0.25, epochs=Epochs, callbacks=[save_best]) # Non-augmentation code
    train_info = net.fit(aug, validation_data=(valid_images, valid_labels), shuffle=True, epochs=Epochs, callbacks=[save_best])
 
    # Save model to file
@@ -103,10 +105,20 @@ else:
    with gzip.open(history_save_name, 'w') as f:
       pickle.dump(history, f)
 
+# Establishing these variables to avoid conflicts between tf/keras versions on different environments
+acc = None
+val_acc = None
+if('acc' in history):
+   acc = history['acc']
+   val_acc = history['val_acc']
+else:
+   acc = history['accuracy']
+   val_acc = history['val_accuracy']
+
 # Plot training and validation accuracy over the course of training
 plt.figure()
-plt.plot(history['acc'], label='accuracy')
-plt.plot(history['val_acc'], label = 'val_accuracy')
+plt.plot(acc, label='accuracy')
+plt.plot(val_acc, label = 'val_accuracy')
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.ylim([0, 1])

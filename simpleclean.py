@@ -11,9 +11,10 @@ DataType = 'clean'
 Epochs = 50
 
 # Saving the figures rather than showing them is used for remote work.
-SaveFigures = True
+SaveFigures = False
 LoadFromFile = True
-Iteration = "C1FinalSimpleClean"
+Iteration = "C0Dupe42FineGrainNoisyFinal" # Runs model based on the final FineGrain structure 
+# Iteration = "C1FinalSimpleClean" # Runs a model based on the structure in this file
 
 # Loading data from supplied functions
 # Training images are a 20000x28x28x3 matrix - 20k images, 28x28 pixels of RGB
@@ -60,19 +61,32 @@ else:
    save_best = tf.keras.callbacks.EarlyStopping(monitor='val_acc', patience=Epochs/4, restore_best_weights=True)
 
    # Pre-Define layers in an array structure for easier recording later
+   # layers = [
+   #    (lambda: tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, activation='relu', input_shape=(28, 28, 3), padding='same')),
+   #    (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
+   #    (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
+   #    (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
+   #    (lambda: tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', padding='same')),
+   #    (lambda: tf.keras.layers.BatchNormalization()),
+   #    (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
+   #    (lambda: tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, activation='relu', padding='same')),
+   #    (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
+   #    (lambda: tf.keras.layers.BatchNormalization()),
+   #    (lambda: tf.keras.layers.Flatten()),
+   #    (lambda: tf.keras.layers.Dropout(0.45)),
+   #    (lambda: tf.keras.layers.Dense(units=n_classes,activation='softmax'))
+   # ]
    layers = [
-      (lambda: tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, activation='relu', input_shape=(28, 28, 3), padding='same')),
-      (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
+      (lambda: tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', input_shape=(28, 28, 3), padding='same')),
+      (lambda: tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', padding='same')),
+      (lambda: tf.keras.layers.MaxPooling2D(pool_size=2, strides=2)),
       (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
-      (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
+      (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
+      (lambda: tf.keras.layers.MaxPooling2D(pool_size=2, strides=2)),
       (lambda: tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', padding='same')),
       (lambda: tf.keras.layers.BatchNormalization()),
-      (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
-      (lambda: tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, activation='relu', padding='same')),
-      (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
-      (lambda: tf.keras.layers.BatchNormalization()),
-      (lambda: tf.keras.layers.Flatten()),
-      (lambda: tf.keras.layers.Dropout(0.45)),
+      (lambda: tf.keras.layers.Flatten()), 
+      (lambda: tf.keras.layers.Dropout(0.55)),
       (lambda: tf.keras.layers.Dense(units=n_classes,activation='softmax'))
    ]
    net = tf.keras.models.Sequential(list(map(lambda l: l(), layers)))
@@ -93,6 +107,7 @@ else:
    aug = imgGen.flow(train_images, train_labels)
 
    # Train the model for defined number of epochs, using 25% of the train data as validation
+   # train_info = net.fit(train_images, train_labels, validation_split=0.25, epochs=Epochs, callbacks=[save_best]) # Non-augmentation code
    train_info = net.fit(aug, validation_data=(valid_images, valid_labels), shuffle=True, epochs=Epochs, callbacks=[save_best])
 
    # Save model to file
@@ -103,10 +118,20 @@ else:
    with gzip.open(history_save_name, 'w') as f:
       pickle.dump(history, f)
 
+# Establishing these variables to avoid conflicts between tf/keras versions on different environments
+acc = None
+val_acc = None
+if('acc' in history):
+   acc = history['acc']
+   val_acc = history['val_acc']
+else:
+   acc = history['accuracy']
+   val_acc = history['val_accuracy']
+
 # Plot training and validation accuracy over the course of training
 plt.figure()
-plt.plot(history['acc'], label='accuracy')
-plt.plot(history['val_acc'], label = 'val_accuracy')
+plt.plot(acc, label='accuracy')
+plt.plot(val_acc, label = 'val_accuracy')
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.ylim([0, 1])
