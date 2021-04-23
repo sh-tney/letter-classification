@@ -61,32 +61,19 @@ else:
    save_best = tf.keras.callbacks.EarlyStopping(monitor='val_acc', patience=Epochs/4, restore_best_weights=True)
 
    # Pre-Define layers in an array structure for easier recording later
-   # layers = [
-   #    (lambda: tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, activation='relu', input_shape=(28, 28, 3), padding='same')),
-   #    (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
-   #    (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
-   #    (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
-   #    (lambda: tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', padding='same')),
-   #    (lambda: tf.keras.layers.BatchNormalization()),
-   #    (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
-   #    (lambda: tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, activation='relu', padding='same')),
-   #    (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
-   #    (lambda: tf.keras.layers.BatchNormalization()),
-   #    (lambda: tf.keras.layers.Flatten()),
-   #    (lambda: tf.keras.layers.Dropout(0.45)),
-   #    (lambda: tf.keras.layers.Dense(units=n_classes,activation='softmax'))
-   # ]
    layers = [
-      (lambda: tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', input_shape=(28, 28, 3), padding='same')),
-      (lambda: tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', padding='same')),
-      (lambda: tf.keras.layers.MaxPooling2D(pool_size=2, strides=2)),
+      (lambda: tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, activation='relu', input_shape=(28, 28, 3), padding='same')),
+      (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
       (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
-      (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
-      (lambda: tf.keras.layers.MaxPooling2D(pool_size=2, strides=2)),
+      (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
       (lambda: tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=1, activation='relu', padding='same')),
       (lambda: tf.keras.layers.BatchNormalization()),
-      (lambda: tf.keras.layers.Flatten()), 
-      (lambda: tf.keras.layers.Dropout(0.55)),
+      (lambda: tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2,2))),
+      (lambda: tf.keras.layers.Conv2D(filters=128, kernel_size=3, strides=1, activation='relu', padding='same')),
+      (lambda: tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=1, activation='relu', padding='same')),
+      (lambda: tf.keras.layers.BatchNormalization()),
+      (lambda: tf.keras.layers.Flatten()),
+      (lambda: tf.keras.layers.Dropout(0.45)),
       (lambda: tf.keras.layers.Dense(units=n_classes,activation='softmax'))
    ]
    net = tf.keras.models.Sequential(list(map(lambda l: l(), layers)))
